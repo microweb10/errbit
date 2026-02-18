@@ -18,12 +18,22 @@ module NotificationServices
 
     def message_for_webhook(problem)
       {
-        problem: {url: problem.url}.merge!(problem.as_json)
+        content: build_discord_message(problem)
       }
     end
 
     def create_notification(problem)
       HTTParty.post(api_token, headers: {"Content-Type" => "application/json", "User-Agent" => "Errbit"}, body: message_for_webhook(problem).to_json)
     end
+
+    private
+      def build_discord_message(problem)
+        <<~MSG
+          **Class:** #{problem.error_class}
+          **Message:** #{problem.message}
+          **Where:** #{problem.where.presence}
+          **URL:** #{problem.url}
+        MSG
+      end
   end
 end
